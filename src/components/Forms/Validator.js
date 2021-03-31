@@ -8,7 +8,7 @@ const Status = ({ loading, valid, value }) => {
 }
 
 // example of server/async validation
-const AsyncValidator = ({ children, validate, value }) => {
+const AsyncValidator = ({ children, validate, value, debounce = 200 }) => {
   const [loading, setLoading] = useState(false);
   const [valid, setValid] = useState(false);
 
@@ -23,7 +23,13 @@ const AsyncValidator = ({ children, validate, value }) => {
       setLoading(false);
     }
 
-    perform()
+    // no need to use actual debounce
+    // this way we only validate after 200ms of wait
+    const timeout = setTimeout(perform, debounce);
+
+    return () => {
+      clearTimeout(timeout)
+    }
   }, [value])
 
   return <div style={{ display: 'flex', alignItems: "flex-end" }}>
