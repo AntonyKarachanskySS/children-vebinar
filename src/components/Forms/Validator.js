@@ -1,7 +1,45 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
-const Validator = ({ children, maxLength, required, value, onChange }) => {
+const Status = ({ loading, valid, value }) => {
+  if (!value) return null;
+  if (loading) return '...';
+
+  return valid ? "Y" : "N"
+}
+
+// example of server/async validation
+const AsyncValidator = ({ children, validate, value }) => {
+  const [loading, setLoading] = useState(false);
+  const [valid, setValid] = useState(false);
+
+  useEffect(() => {
+    const perform = async () => {
+      setLoading(true);
+
+      const valid = await validate?.(value);
+      console.log(valid);
+      setValid(valid);
+
+      setLoading(false);
+    }
+
+    perform()
+  }, [value])
+
+  return <div style={{ display: 'flex', alignItems: "flex-end" }}>
+    {children}
+    <span>
+      <Status value={value} loading={loading} valid={valid} />
+    </span>
+  </div>
+}
+
+const Validator = ({ async, validate, children, maxLength, required, value, onChange }) => {
   const newChildren = React.cloneElement(children, { value, onChange });
+
+  if (async) {
+    return <AsyncValidator value={value} validate={validate}>{newChildren}</AsyncValidator>
+  }
 
   if (value?.length > maxLength) {
     return <div style={{ border: "1px solid red" }}>{newChildren}</div>;
